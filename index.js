@@ -1,11 +1,15 @@
-const express = require('express');
-const { graphqlHTTP } = require('express-graphql');
+import express from 'express';
+import { graphqlHTTP } from 'express-graphql';
+import { graphqlExpress, graphiqlExpress  } from 'apollo-server-express';
 import { makeExecutableSchema } from "graphql-tools";
 import bodyParser from 'body-parser';
 import mongoose from 'mongoose';
+mongoose.Promise = global.Promise;
+import cors from 'cors';
 import "dotenv/config";
 
 import models from './models';
+import auth from './auth'
 
 // mezclar todos los archivos de carpetas de types y resolvers
 import path from 'path';
@@ -14,42 +18,29 @@ const typeDefs = mergeTypes(fileLoader(path.join(__dirname, './types')));
 const resolvers = mergeResolvers(fileLoader(path.join(__dirname, './resolvers')));
 
 const app = express();
-
 const schema = makeExecutableSchema({
   typeDefs,
   resolvers
 });
 // Otorgar permisos para acceder a los recursos desde el Front-end
-// app.use(cors({
-//   origin: ["http://localhost:3000"]
-// }));
-// app.use(auth.checkHeaders)
+app.use(cors({
+  origin: ["http://localhost:3000"]
+}));
+app.use(auth.checkHeaders)
 
-app.use(
-  '/graphql',
-  bodyParser.json(),
-  graphqlHTTP({
-    schema,
-    graphiql: true,
-    context: {
-      models,
-      SECRET: process.env.SECRET,
-      user: {
-        _id: 1, username: 'Brayan', numdoc: 123456
-      }
-    }
-    // (req) => {
-    //   console.log("User ID:", req.user);
-    //   return {
-    //     schema,
-    //     context: {
-    //       models,
-    //       SECRET: process.env.SECRET,
-    //       user: req.user
-    //     }
-    //   }
-    // })
-  }));
+app.use('/graphql', bodyParser.json(), graphqlHTTP({
+
+        schema,
+        graphiql: true,
+        context: {
+          models,
+          SECRET: process.env.SECRET,
+          user: {
+            _id: 1, username: 'Lider del proyecto', numdoc: 123456
+          }
+        }
+      
+    }));
 
 mongoose.connect("mongodb+srv://admin:admin@cluster0.8vpll.mongodb.net/Master_Synergy?retryWrites=true&w=majority", {
   useNewUrlParser: true,

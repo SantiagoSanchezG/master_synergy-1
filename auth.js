@@ -40,10 +40,8 @@ const auth = {
       token: newToken
     }
   },
-  getToken:  ({_id} )=>{
-    const newToken = jwt.sign({user: _id }, process.env.SECRET, { expiresIn: '10m'})
-    // const refreshToken = jwt.sign({user: _id}, process.env.SECRET, { expiresIn: '10m'})
-
+  getToken:  ({_id, username, numdoc} )=>{
+    const newToken = jwt.sign({user: _id, username: username, numdoc: numdoc }, process.env.SECRET, { expiresIn: '30m'})
     return [newToken];
   },
   login: async (email, password, User)=>{

@@ -6,6 +6,8 @@ export default `
 
     type Mutation {
       createProyect(proyect: CreateProyect): Proyect!
+      deleteProyect(_id: ID!): String
+
     }
     
     type Proyect {

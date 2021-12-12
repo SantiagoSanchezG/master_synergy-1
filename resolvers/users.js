@@ -1,5 +1,6 @@
 import bcrypt from "bcrypt";
-import auth from '../auth.js';
+import auth from "../auth.js";
+import {isAuthenticatedResolver} from "../permissions"
 
 const formatErrors = (error, otherErrors) => {
   const errors = error.errors;
@@ -19,9 +20,9 @@ const formatErrors = (error, otherErrors) => {
   const uknownError = {};
   switch (error.code) {
     case 11000:
-      uknownError.path = "email" 
+      uknownError.path = "email";
       uknownError.message = "El correo electrónico ya está registrado";
-      break
+      break;
     default:
       uknownError.path = "Desconocido";
       uknownError.message = error.message;
@@ -31,12 +32,14 @@ const formatErrors = (error, otherErrors) => {
 
 export default {
   Query: {
-    allUsers: async (parent, args, { models }) => await models.User.find(),
+    allUsers: isAuthenticatedResolver.createResolver(
+      (parent, args, { models }) => models.User.find()),
     getUser: async (parent, args, { models }) =>
       await models.User.findOne(args),
   },
   Mutation: {
-    login: async (parent, { email, password }, {models:{User}, SECRET})=> auth.login(email, password, User, SECRET),
+    login: async (parent, { email, password }, { models: { User }, SECRET }) =>
+      auth.login(email, password, User, SECRET),
     createUser: async (parent, { password, ...args }, { models }) => {
       const otherErrors = [];
       try {
@@ -48,7 +51,10 @@ export default {
         }
 
         const hashPassword = await bcrypt.hash(password, 10);
-        const usuario = await models.User.create({ ...args, password: hashPassword });
+        const usuario = await models.User.create({
+          ...args,
+          password: hashPassword,
+        });
 
         if (otherErrors.length) {
           throw otherErrors;
@@ -66,5 +72,15 @@ export default {
         };
       }
     },
+      deleteUser: async(parent, args, {models} ) => {
+        const { _id } = args;
+        await models.User.findByIdAndDelete(_id);
+        return "Usuario eliminado"
+      },
+    // updateUser: async(parent, args, context, info) => {
+    //   const {id}= args
+    //   const 
+
+    // }
   },
 };

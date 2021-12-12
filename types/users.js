@@ -6,16 +6,18 @@ export default `
 
     type Mutation {
       login(email: String!, password: String!): Response!
-      createUser(username: String!, numdoc: Int!, email: String!, password: String!, tipo_usuario: TypeUser!, user_estado: UserState): Response!
+      createUser(username: String!, numdoc: String!, email: String!, password: String!, tipo_usuario: String!): Response!
+      updateUser(username: String!, numdoc: Int!, email: String!, password: String!, tipo_usuario: TypeUser!, user_estado: UserState): User!
+      deleteUser(_id: ID!): String
     }
 
     type User {
       _id: ID!
       username: String!
-      numdoc: Int!
+      numdoc: String!
       password: String!
       email: String!
-      tipo_usuario: TypeUser!
+      tipo_usuario: String!
       user_estado: UserState
   }
 
